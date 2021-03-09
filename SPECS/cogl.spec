@@ -27,12 +27,26 @@ Patch1: 0002-add-GL_ARB_shader_texture_lod-support.patch
 # and do post blurring.
 Patch2: 0003-texture-support-copy_sub_image.patch
 
+# Patch from https://gitlab.gnome.org/GNOME/cogl/-/commit/ff5dfc658042115392d9215a40afab3636b8461a.diff
+# to work with updated mesa and libglvnd
+Patch3: 0004-ff5dfc658042115392d9215a40afab3636b8461a.diff
+# Due to patch above, automake is needed
+BuildRequires: gettext-devel
+
 BuildRequires: chrpath
 BuildRequires: pkgconfig(cairo)
-BuildRequires: pkgconfig(egl)
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1744292
+#BuildRequires: pkgconfig(egl)
+BuildRequires: mesa-libEGL-devel
+
 BuildRequires: pkgconfig(gbm)
 BuildRequires: pkgconfig(gdk-pixbuf-2.0)
-BuildRequires: pkgconfig(gl)
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1744292
+#BuildRequires: pkgconfig(gl)
+BuildRequires: mesa-libGL-devel
+
 BuildRequires: pkgconfig(glib-2.0)
 BuildRequires: pkgconfig(gobject-introspection-1.0)
 BuildRequires: pkgconfig(gtk-doc)
@@ -102,9 +116,12 @@ This package contains the installable tests for %{cogl}.
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
 
 %build
 CFLAGS="$RPM_OPT_FLAGS -fPIC"
+# Need to run automake since patch3 touches configure.ac
+autoreconf -ivf
 %configure \
   --enable-cairo=yes \
   --enable-cogl-pango=yes \
